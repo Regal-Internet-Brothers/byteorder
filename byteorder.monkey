@@ -4,14 +4,47 @@ Public
 
 ' Preprocessor related:
 #BYTEORDER_FLOATING_POINT = True
+#BYTEORDER_CACHE = True
 
 ' Imports:
 #If BYTEORDER_FLOATING_POINT
 	Import brl.databuffer
 #End
 
-' Global variable(s):
+#If SIZEOF_IMPLEMENTED
+	Import sizeof
+#End
+
+' Constant variable(s) (Public):
+' Nothing so far.
+
+' Constant variable(s) (Private):
+Private
+
+#If BYTEORDER_FLOATING_POINT
+	#If SIZEOF_IMPLEMENTED
+		Const SizeOfFloat:Int = SizeOf(0.0) ' SizeOf("float")
+	#Else
+		Const SizeOfFloat:Int = 4
+	#End
+#End
+
+Public
+
+' Global variable(s) (Public):
 Global System_BigEndian:BoolObject = Null
+
+' Global variable(s) (Private):
+Private
+
+' Cache:
+#If BYTEORDER_FLOATING_POINT
+	#If BYTEORDER_CACHE
+		Global FloatBuffer:DataBuffer = New DataBuffer(SizeOfFloat)
+	#End
+#End
+
+Public
 
 ' Functions:
 
@@ -82,12 +115,19 @@ End
 		#End
 		#End
 		
-		Buffer = New DataBuffer(4)
+		#If BYTEORDER_CACHE
+			Buffer = FloatBuffer
+		#Else
+			Buffer = New DataBuffer(SizeOfFloat)
+		#End
 		
+		' This is may change in the future:
 		Buffer.PokeFloat(0, F)
 		Value = HToNL(Buffer.PeekInt(0))
 		
-		Buffer.Discard(); Buffer = Null
+		#If Not BYTEORDER_CACHE
+			Buffer.Discard(); Buffer = Null
+		#End
 		
 		' Return the calculated integer.
 		Return Value
@@ -107,12 +147,19 @@ End
 		#End
 		#End
 		
-		Buffer = New DataBuffer(4)
+		#If BYTEORDER_CACHE
+			Buffer = FloatBuffer
+		#Else
+			Buffer = New DataBuffer(4)
+		#End
 		
+		' This may change in the future:
 		Buffer.PokeInt(0, NToHL(Data))
 		Value = Buffer.PeekFloat(0)
 		
-		Buffer.Discard(); Buffer = Null
+		#If Not BYTEORDER_CACHE
+			Buffer.Discard(); Buffer = Null
+		#End
 		
 		' Return the calculated floating-point value.
 		Return Value
