@@ -1,4 +1,4 @@
 byteorder
 =========
 
-Byte order / swapping functionality for the Monkey X programming language.
+Integer and floating-point byte order/swapping functionality for the [Monkey programming language](https://github.com/blitz-research/monkey).

@@ -74,7 +74,7 @@ End
 Function NToHL:Int(I:Int) ' 32-bit
 	' Swap the bytes around.
 	If (Not BigEndian()) Then
-		I = (((I Shr 24) & $000000FF) | ((I Shr 8) & $0000FF00) | ((I Shl 8) & $00FF0000) | ((I Shl 24) & $FF000000))
+		Return (((I Shr 24) & $000000FF) | ((I Shr 8) & $0000FF00) | ((I Shl 8) & $00FF0000) | ((I Shl 24) & $FF000000))
 	Endif
 	
 	Return I
@@ -90,7 +90,7 @@ End
 ' and if it isn't, it'll convert the integer to little-endian:
 Function NToHS:Int(I:Int) ' 16-bit
 	If (Not BigEndian()) Then
-		I = ((((I & $000000FF) Shl 8) | ((I & $0000FF00) Shr 8)))
+		Return ((((I & $000000FF) Shl 8) | ((I & $0000FF00) Shr 8)))
 	Endif
 	
 	Return I
