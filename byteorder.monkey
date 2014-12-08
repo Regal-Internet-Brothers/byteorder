@@ -11,9 +11,7 @@ Public
 	Import brl.databuffer
 #End
 
-#If SIZEOF_IMPLEMENTED
-	Import sizeof
-#End
+Import sizeof
 
 ' Constant variable(s) (Public):
 ' Nothing so far.
