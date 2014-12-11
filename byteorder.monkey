@@ -19,11 +19,12 @@ Import sizeof
 ' Constant variable(s) (Private):
 Private
 
-#If BYTEORDER_FLOATING_POINT
-	#If SIZEOF_IMPLEMENTED
-		Const SizeOfFloat:Int = SizeOf(0.0) ' SizeOf("float")
+#If BYTEORDER_FLOATING_POINT And Not SIZEOF_IMPLEMENTED
+	' Modifying 'SizeOf_FloatingPoint' should not be done, as it may be backed by a constant:
+	#If LANG = "cpp" And CPP_DOUBLE_PRECISION_FLOATS And TARGET <> "win8" And Target <> "winrt"
+		Const SizeOf_FloatingPoint:Int = 8
 	#Else
-		Const SizeOfFloat:Int = 4
+		Const SizeOf_FloatingPoint:Int = 4
 	#End
 #End
 
@@ -38,7 +39,7 @@ Private
 ' Cache:
 #If BYTEORDER_FLOATING_POINT
 	#If BYTEORDER_CACHE
-		Global FloatBuffer:DataBuffer = New DataBuffer(SizeOfFloat)
+		Global FloatBuffer:DataBuffer = New DataBuffer(SizeOf_FloatingPoint)
 	#End
 #End
 
@@ -116,7 +117,7 @@ End
 		#If BYTEORDER_CACHE
 			Buffer = FloatBuffer
 		#Else
-			Buffer = New DataBuffer(SizeOfFloat)
+			Buffer = New DataBuffer(SizeOf_FloatingPoint)
 		#End
 		
 		' This is may change in the future:
