@@ -3,6 +3,7 @@ Strict
 Public
 
 ' Preprocessor related:
+'#BYTEORDER_COMPATIBILITY = True
 #BYTEORDER_FLOATING_POINT = True
 #BYTEORDER_CACHE = True
 
@@ -31,7 +32,9 @@ Private
 Public
 
 ' Global variable(s) (Public):
-Global System_BigEndian:BoolObject = Null
+#If BYTEORDER_COMPATIBILITY
+	Global System_BigEndian:Bool = False
+#End
 
 ' Global variable(s) (Private):
 Private
@@ -53,23 +56,32 @@ Public
 
 ' These endian-related commands are mainly for internal use / last resort measures:
 Function BigEndian:Bool()
-	If (System_BigEndian = Null) Then
-		Local I:Int = 1
-		
-		I = I Shr 31
-		
-		If (I > 0) Then
+	Local I:Int = 1
+	
+	I = I Shr 31
+
+	If (I > 0) Then
+		#If BYTEORDER_COMPATIBILITY
 			System_BigEndian = True
-		Else
-			System_BigEndian = False
-		Endif
+		#End
+		
+		Return True
 	Endif
 	
-	Return System_BigEndian
+	#If BYTEORDER_COMPATIBILITY
+		System_BigEndian = False
+	#End
+	
+	' Return the default response.
+	Return False
 End
 
-' This command takes a 32-bit big-endian integer, checks if the system is big-endian,
-' and if it isn't, it'll convert the integer to little-endian:
+Function LittleEndian:Bool()
+	Return Not BigEndian()
+End
+
+' This command takes a 32-bit integer, checks if the system is big-endian,
+' and if it isn't, it'll convert the integer to the opposite endian-format:
 Function NToHL:Int(I:Int) ' 32-bit
 	' Swap the bytes around.
 	If (Not BigEndian()) Then
@@ -83,20 +95,30 @@ Function HToNL:Int(I:Int)
 	Return NToHL(I)
 End
 
-'#End
-
-' This command takes a 16-bit big-endian integer, checks if the system is big-endian,
-' and if it isn't, it'll convert the integer to little-endian:
-Function NToHS:Int(I:Int) ' 16-bit
-	If (Not BigEndian()) Then
-		Return ((((I & $000000FF) Shl 8) | ((I & $0000FF00) Shr 8)))
-	Endif
-	
-	Return I
+' For the sake of future-proofing, it is recommended that you use
+' these two commands, instead of 'HToNL' and 'NToHL' directly:
+Function HToNI:Int(I:Int)
+	Return HToNL(I)
 End
 
-Function HToNS:Int(I:Int)
-	Return NToHS(I)
+Function NToHI:Int(I:Int)
+	Return NToHL(I)
+End
+
+'#End
+
+' This command takes a 16-bit integer, checks if the system is big-endian,
+' and if it isn't, it'll convert the integer to the opposite-endian:
+Function NToHS:Int(S:Int) ' 16-bit
+	If (Not BigEndian()) Then
+		Return ((((S & $000000FF) Shl 8) | ((S & $0000FF00) Shr 8)))
+	Endif
+	
+	Return S
+End
+
+Function HToNS:Int(S:Int)
+	Return NToHS(S)
 End
 
 #If BYTEORDER_FLOATING_POINT
