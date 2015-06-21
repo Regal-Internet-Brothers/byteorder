@@ -4,15 +4,25 @@ Public
 
 ' Preprocessor related:
 '#BYTEORDER_COMPATIBILITY = True
+'#BYTEORDER_USE_SIZEOF = True
 #BYTEORDER_FLOATING_POINT = True
 #BYTEORDER_CACHE = True
 
-' Imports:
+' Imports (Public):
+Import brl.stream
+
+' Imports (Private):
+Private
+
 #If BYTEORDER_FLOATING_POINT
 	Import brl.databuffer
+	
+	#If BYTEORDER_USE_SIZEOF
+		Import sizeof
+	#End
 #End
 
-Import sizeof
+Public
 
 ' Constant variable(s) (Public):
 ' Nothing so far.
@@ -20,12 +30,14 @@ Import sizeof
 ' Constant variable(s) (Private):
 Private
 
-#If BYTEORDER_FLOATING_POINT And Not SIZEOF_IMPLEMENTED
-	' Modifying 'SizeOf_FloatingPoint' should not be done, as it may be backed by a constant:
-	#If LANG = "cpp" And CPP_DOUBLE_PRECISION_FLOATS And TARGET <> "win8" And Target <> "winrt"
-		Const SizeOf_FloatingPoint:Int = 8
-	#Else
-		Const SizeOf_FloatingPoint:Int = 4
+#If Not BYTEORDER_USE_SIZEOF Or Not SIZEOF_IMPLEMENTED
+	#If BYTEORDER_FLOATING_POINT
+		' Modifying 'SizeOf_FloatingPoint' should not be done, as it may be backed by a constant:
+		#If LANG = "cpp" And CPP_DOUBLE_PRECISION_FLOATS And TARGET <> "win8" And TARGET <> "winrt"
+			Const SizeOf_FloatingPoint:Int = 8
+		#Else
+			Const SizeOf_FloatingPoint:Int = 4
+		#End
 	#End
 #End
 
@@ -186,3 +198,188 @@ End
 		Return Value
 	End
 #End
+
+' Classes:
+
+' Automatic byte-swapping for 'Streams'.
+Class EndianStreamManager<StreamType> Extends Stream
+	' Constructor(s):
+	Method New(S:StreamType, BigEndianStorage:Bool=False)
+		Self.S = S
+		
+		Self.BigEndianStorage = BigEndianStorage
+	End
+
+	' Methods:
+	Method Read:Int(Buffer:DataBuffer, Offset:Int, Count:Int)
+		Return S.Read(Buffer, Offset, Count)
+	End
+	
+	Method Write:Int(Buffer:DataBuffer, Offset:Int, Count:Int)
+		Return S.Write(Buffer, Offset, Count)
+	End
+	
+	Method ReadAll:Void(Buffer:DataBuffer, Offset:Int, Count:Int)
+		S.ReadAll(Buffer, Offset, Count)
+		
+		Return
+	End
+	
+	Method ReadAll:DataBuffer()
+		Return S.ReadAll()
+	End
+	
+	Method WriteAll:Void(Buffer:DataBuffer, Offset:Int, Count:Int)
+		S.WriteAll(Buffer, Offset, Count)
+		
+		Return
+	End
+	
+	Method ReadString:String(Count:Int, Encoding:String="utf8")
+		Return S.ReadString(Count, Encoding)
+	End
+	
+	Method ReadString:String(Encoding:String="utf8")
+		Return S.ReadString(Encoding)
+	End
+	
+	Method ReadLine:String()
+		Return S.ReadLine()
+	End
+	
+	Method ReadByte:Int()
+		Return S.ReadByte()
+	End
+	
+	Method ReadShort:Int()
+		' Local variable(s):
+		Local Data:= S.ReadShort()
+		
+		If (BigEndianStorage) Then
+			Return NToHS(Data)
+		Endif
+		
+		Return Data
+	End
+	
+	Method ReadInt:Int()
+		' Local variable(s):
+		Local Data:= S.ReadInt()
+		
+		If (BigEndianStorage) Then
+			Return NToHL(Data)
+		Endif
+		
+		Return Data
+	End
+	
+	Method ReadFloat:Float()
+		If (BigEndianStorage) Then
+			Return NToHF(S.ReadInt())
+		Endif
+		
+		Return S.ReadFloat()
+	End
+	
+	Method WriteByte:Void(Value:Int)
+		S.WriteByte(Value)
+		
+		Return
+	End
+	
+	Method WriteShort:Void(Value:Int)
+		If (BigEndianStorage) Then
+			Value = HToNS(Value)
+		Endif
+		
+		' Call the super-class's implementation.
+		S.WriteShort(Value)
+		
+		Return
+	End
+	
+	Method WriteInt:Void(Value:Int)
+		If (BigEndianStorage) Then
+			Value = HToNL(Value)
+		Endif
+		
+		' Call the super-class's implementation.
+		S.WriteInt(Value)
+		
+		Return
+	End
+	
+	Method WriteFloat:Void(Value:Float)
+		' Call the evaluated write command.
+		If (BigEndianStorage) Then
+			S.WriteInt(HToNF(Value))
+		Else
+			S.WriteFloat(Value)
+		Endif
+		
+		Return
+	End
+	
+	Method WriteString:Void(Value:String, Encoding:String="utf8")
+		S.WriteString(Value, Encoding)
+		
+		Return
+	End
+	
+	Method WriteLine:Void(Str:String)
+		S.WriteLine(Str)
+		
+		Return
+	End
+	
+	Method Close:Void()
+		S.Close()
+		
+		Return
+	End
+	
+	Method Seek:Int(Position:Int)
+		Return S.Seek(Position)
+	End
+	
+	Method Skip:Void(Count:Int)
+		S.Skip(Count)
+		
+		Return
+	End
+	
+	' Properties:
+	Method Eof:Int() Property
+		Return S.Eof
+	End
+	
+	Method Length:Int() Property
+		Return S.Length
+	End
+	
+	Method Position:Int() Property
+		Return S.Position
+	End
+	
+	Method Stream:StreamType() Property
+		Return Self.S
+	End
+	
+	' Fields (Public):
+	Field BigEndianStorage:Bool
+	
+	' Fields (Protected):
+	Protected
+	
+	Field S:Stream
+	
+	Public
+End
+
+Class BasicEndianStreamManager Extends EndianStreamManager<Stream> Final
+	' Constructor(s):
+	Method New(S:StreamType, BigEndianStorage:Bool=False)
+		' Call the super-class's implementation.
+		Super.New(S, BigEndianStorage)
+	End
+End
