@@ -378,7 +378,7 @@ End
 
 Class BasicEndianStreamManager Extends EndianStreamManager<Stream> Final
 	' Constructor(s):
-	Method New(S:StreamType, BigEndianStorage:Bool=False)
+	Method New(S:Stream, BigEndianStorage:Bool=False)
 		' Call the super-class's implementation.
 		Super.New(S, BigEndianStorage)
 	End
