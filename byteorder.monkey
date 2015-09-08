@@ -9,7 +9,7 @@ Public
 #BYTEORDER_CACHE = True
 
 ' Imports (Public):
-' Nothing so far.
+Import ioutil.endianstream
 
 ' Imports (Private):
 Private
