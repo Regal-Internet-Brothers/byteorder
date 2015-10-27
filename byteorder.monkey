@@ -9,7 +9,7 @@ Public
 #BYTEORDER_CACHE = True
 
 ' Imports (Public):
-Import ioutil.endianstream
+Import regal.ioutil.endianstream
 
 ' Imports (Private):
 Private
@@ -18,7 +18,7 @@ Private
 	Import brl.databuffer
 	
 	#If BYTEORDER_USE_SIZEOF
-		Import sizeof
+		Import regal.sizeof
 	#End
 #End
 

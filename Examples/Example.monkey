@@ -4,8 +4,8 @@ Public
 
 ' Imports:
 
-'Import sizeof
-Import byteorder
+'Import regal.sizeof
+Import regal.byteorder
 
 ' Functions:
 Function Main:Int()
