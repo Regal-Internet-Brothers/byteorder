@@ -119,7 +119,7 @@ End
 
 '#End
 
-' This command takes a 16-bit integer, checks if the system is big-endian,
+' This command takes an unsigned 16-bit integer, checks if the system is big-endian,
 ' and if it isn't, it'll convert the integer to the opposite-endian:
 Function NToHS:Int(S:Int) ' 16-bit
 	If (Not BigEndian()) Then
@@ -129,8 +129,26 @@ Function NToHS:Int(S:Int) ' 16-bit
 	Return S
 End
 
+' This wraps the 'HToNS' command.
 Function HToNS:Int(S:Int)
 	Return NToHS(S)
+End
+
+' This acts similarly to the 'NToHS' command. Unlike that command,
+' this attempts to preserve the sign-bit. Thus, making this
+' version "signed", rather than unsigned. Feeding unsigned values
+' into this command will result in undefined behavior.
+Function NToHS_S:Int(S:Int) ' 16-bit
+	If (Not BigEndian()) Then
+		Return (HToNL(S) Shr 16)
+	Endif
+	
+	Return S
+End
+
+' This wraps the 'NToHS_S' command.
+Function HToNS_S:Int(S:Int)
+	Return NToHS_S(S)
 End
 
 #If BYTEORDER_FLOATING_POINT
